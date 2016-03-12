@@ -74,7 +74,7 @@ namespace fsph{
                 // give negative m result
                 if(m_m > m_l)
                 {
-                    const unsigned int m(m_m - m_l - 1);
+                    const unsigned int m(m_m - m_l);
                     return (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, m)]/sqrt(2*M_PI))*
                             std::conj(m_generator.m_thetaHarmonics[m]));
                 }
