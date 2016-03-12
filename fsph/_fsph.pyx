@@ -51,3 +51,17 @@ def pointwise_sph(phi, theta, lmax, negative_m=True):
         cpp.evaluate_SPH[double](&result_d[0], lmax, &phi_d[0], &theta_d[0], phi.size, negative_m)
 
     return result
+
+def get_LMs(lmax, negative_m=True):
+    ls = []
+    ms = []
+
+    for l in range(lmax + 1):
+        ls.extend((l + 1)*[l])
+        ms.extend(range(l + 1))
+
+        if negative_m:
+            ls.extend(l*[l])
+            ms.extend([-m for m in range(1, l + 1)])
+
+    return np.array([ls, ms], dtype=np.int64).T
