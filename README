@@ -1,0 +1,4 @@
+fsph is a library to efficiently compute series of spherical harmonics
+(i.e. all of Y_l^m for a set of l). It is based on math enumerated by
+Martin J. Mohlenkamp at
+http://www.ohio.edu/people/mohlenka/research/uguide.pdf .
