@@ -13,6 +13,7 @@ cimport cpp
 np.import_array()
 
 @cython.boundscheck(False)
+@cython.wraparound(False)
 def pointwise_sph(phi, theta, lmax, negative_m=True):
     phi = np.ascontiguousarray(phi)
     theta = np.ascontiguousarray(theta)

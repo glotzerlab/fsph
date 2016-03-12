@@ -219,14 +219,17 @@ namespace fsph{
     {
         PointSPHEvaluator<Real> eval(lmax);
 
+        unsigned int j(0);
         for(unsigned int i(0); i < N; ++i)
         {
             eval.compute(phi[i], theta[i]);
 
-            unsigned int j(0);
             for(typename PointSPHEvaluator<Real>::iterator iter(eval.begin(full_m));
-                iter != eval.end(); ++iter, ++j)
+                iter != eval.end(); ++iter)
+            {
                 target[j] = *iter;
+                ++j;
+            }
         }
     }
 }
