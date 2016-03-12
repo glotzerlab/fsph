@@ -14,8 +14,8 @@ np.import_array()
 
 @cython.boundscheck(False)
 def pointwise_sph(phi, theta, lmax, negative_m=True):
-    phi = np.ascontiguousarray(phi).reshape((-1,))
-    theta = np.ascontiguousarray(theta).reshape((-1,))
+    phi = np.ascontiguousarray(phi)
+    theta = np.ascontiguousarray(theta)
     lmax = int(lmax)
 
     if phi.dtype in [np.int32, np.int64]:
@@ -27,7 +27,7 @@ def pointwise_sph(phi, theta, lmax, negative_m=True):
     assert phi.dtype in [np.float32, np.float64] and theta.dtype in [np.float32, np.float64]
 
     sphCount = (lmax + 1)*(lmax + 2)//2 + (lmax*(lmax + 1)//2 if negative_m else 0)
-    resultShape = (phi.size, sphCount)
+    resultShape = phi.shape + (sphCount,)
 
     cdef float[:] phi_f;
     cdef float[:] theta_f;
