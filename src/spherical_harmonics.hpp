@@ -20,7 +20,7 @@ namespace fsph{
         if(l > 0)
             return sphCount(l - 1) + m;
         else
-            return m;
+            return 0;
     }
 
     template<typename Real>
@@ -43,12 +43,12 @@ namespace fsph{
                 m_generator(generator), m_l(l), m_m(m), m_full_m(full_m)
             {}
 
-            inline bool operator==(const iterator &rhs)
+            inline bool operator==(const iterator &rhs) const
             {
                 return rhs.m_l == m_l && rhs.m_m == m_m;
             }
 
-            inline bool operator!=(const iterator &rhs)
+            inline bool operator!=(const iterator &rhs) const
             {
                 return !(*this == rhs);
             }
@@ -69,10 +69,10 @@ namespace fsph{
                 return *this;
             }
 
-            inline std::complex<Real> operator*()
+            inline std::complex<Real> operator*() const
             {
                 // give negative m result
-                if(m_m > m_l + 1)
+                if(m_m > m_l)
                 {
                     const unsigned int m(m_m - m_l - 1);
                     return (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, m)]/sqrt(2*M_PI))*
@@ -100,21 +100,30 @@ namespace fsph{
             m_legendre(new Real[sphCount(lmax)], sphCount(lmax))
         {
             evaluatePrefactors();
-
-            precompute(1, 1);
-            std::cout << "done" << std::endl;
         }
 
-        iterator begin(bool full_m)
+        iterator begin(bool full_m) const
         {
             return iterator(*this, full_m);
         }
 
-        iterator end()
+        iterator end() const
         {
             return iterator(*this, m_lmax + 1, 0, 0);
         }
 
+        void compute(Real phi, Real theta)
+        {
+            const Real sphi(sin(phi));
+            compute_sinpows(sphi);
+
+            compute_thetaHarmonics(theta);
+
+            const Real cphi(cos(phi));
+            compute_jacobis(cphi);
+
+            compute_legendres();
+        }
     private:
         const unsigned int m_lmax;
         // powers of sin(phi)
@@ -154,21 +163,21 @@ namespace fsph{
             }
         }
 
-        void precompute_sinpows(const Real &sphi)
+        void compute_sinpows(const Real &sphi)
         {
             m_sinPowers[0] = 1;
             for(unsigned int i(1); i < m_lmax + 1; ++i)
                 m_sinPowers[i] = m_sinPowers[i - 1]*sphi;
         }
 
-        void precompute_thetaHarmonics(const Real &theta)
+        void compute_thetaHarmonics(const Real &theta)
         {
             m_thetaHarmonics[0] = std::complex<Real>(1, 0);
             for(unsigned int i(0); i < m_lmax + 1; ++i)
                 m_thetaHarmonics[i] = exp(std::complex<Real>(0, i*theta));
         }
 
-        void precompute_jacobis(const Real &cphi)
+        void compute_jacobis(const Real &cphi)
         {
             const unsigned int f1Count(index2d(m_lmax, m_lmax + 1, 0));
 
@@ -193,7 +202,7 @@ namespace fsph{
             }
         }
 
-        void precompute_legendres()
+        void compute_legendres()
         {
             for(unsigned int l(0); l < m_lmax + 1; ++l)
             {
@@ -203,18 +212,21 @@ namespace fsph{
                 }
             }
         }
-
-        void precompute(Real phi, Real theta)
-        {
-            const Real sphi(sin(phi));
-            precompute_sinpows(sphi);
-
-            precompute_thetaHarmonics(theta);
-
-            const Real cphi(cos(phi));
-            precompute_jacobis(cphi);
-
-            precompute_legendres();
-        }
     };
+
+    template<typename Real>
+    void evaluate_SPH(std::complex<Real> *target, unsigned int lmax, const Real *phi, const Real *theta, unsigned int N, bool full_m)
+    {
+        PointSPHEvaluator<Real> eval(lmax);
+
+        for(unsigned int i(0); i < N; ++i)
+        {
+            eval.compute(phi[i], theta[i]);
+
+            unsigned int j(0);
+            for(typename PointSPHEvaluator<Real>::iterator iter(eval.begin(full_m));
+                iter != eval.end(); ++iter, ++j)
+                target[j] = *iter;
+        }
+    }
 }
