@@ -80,7 +80,8 @@ namespace fsph{
                 }
                 else // positive m
                 {
-                    return (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, m_m)]/sqrt(2*M_PI))*
+                    return (std::complex<Real>(
+                                m_generator.m_legendre[sphIndex(m_l, m_m)]/sqrt(2*M_PI))*
                             m_generator.m_thetaHarmonics[m_m]);
                 }
             }
@@ -206,7 +207,7 @@ namespace fsph{
         {
             for(unsigned int l(0); l < m_lmax + 1; ++l)
             {
-                for(unsigned int m(0); m < m_lmax + 1; ++m)
+                for(unsigned int m(0); m < l + 1; ++m)
                 {
                     m_legendre[sphIndex(l, m)] = m_sinPowers[m]*m_jacobi[index2d(m_lmax + 1, m, l - m)];
                 }
