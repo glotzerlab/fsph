@@ -124,6 +124,7 @@ namespace fsph{
             return iterator(*this, l, m, full_m);
         }
 
+        // phi in [0, pi]; theta in [0, 2*pi]
         void compute(Real phi, Real theta)
         {
             const Real sphi(sin(phi));
