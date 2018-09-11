@@ -23,7 +23,7 @@ def pointwise_sph(phi, theta, lmax, negative_m=True):
     N_coordinates is the length of the given coordinate arrays.
 
     To map the columns of the result array to particular (l, m)
-    values, see :py:fun:`get_LMs`.
+    values, see :py:func:`get_LMs`.
 
     :param phi: Array-like object of polar angles in [-pi, pi]
     :param theta: Array-like object of azimuthal angles in [0, 2*pi]
