@@ -15,6 +15,22 @@ np.import_array()
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def pointwise_sph(phi, theta, lmax, negative_m=True):
+    """Evaluate a series of spherical harmonics on an array of spherical coordinates.
+
+    The array objects phi and theta should have the same length and
+    can hold single- or double-precision floating point numbers. The
+    resulting array will be of length (N_coordinates, N_sphs) where
+    N_coordinates is the length of the given coordinate arrays.
+
+    To map the columns of the result array to particular (l, m)
+    values, see :py:fun:`get_LMs`.
+
+    :param phi: Array-like object of polar angles in [-pi, pi]
+    :param theta: Array-like object of azimuthal angles in [0, 2*pi]
+    :param lmax: Integer maximum spherical harmonic degree to compute (inclusive)
+    :param negative_m: Set to False to disable the negative-m spherical harmonics
+
+    """
     phi = np.ascontiguousarray(phi)
     theta = np.ascontiguousarray(theta)
     lmax = int(lmax)
@@ -54,6 +70,13 @@ def pointwise_sph(phi, theta, lmax, negative_m=True):
     return result
 
 def get_LMs(lmax, negative_m=True):
+    """Returns the (l, m) indices in the order that they are exposed by fsph.
+
+    Creates a (N_sphs, 2) array where the first column corresponds to
+    the l values and the second column corresponds to the m values for
+    any index in the series.
+
+    """
     ls = []
     ms = []
 
