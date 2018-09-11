@@ -39,8 +39,19 @@ setup(name='fsph',
       description='Fast sequential spherical harmonics calculation',
       author='Matthew Spellings',
       author_email='mspells@umich.edu',
-      url='http://fsph.readthedocs.io',
-      packages=['fsph'],
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'License :: OSI Approved :: MIT License',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 3',
+          'Topic :: Scientific/Engineering :: Mathematics',
+      ],
+      ext_modules=modules,
       install_requires=['numpy'],
-      ext_modules=modules
+      packages=['fsph'],
+      project_urls={
+          'Documentation': 'http://fsph.readthedocs.io/',
+          'Source': 'https://bitbucket.org/glotzer/fsph'
+          },
+      url='http://fsph.readthedocs.io',
 )
