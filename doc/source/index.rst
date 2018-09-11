@@ -10,7 +10,23 @@ Welcome to fsph's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-fsph is a library to compute series of spherical harmonics.
+fsph is a library to compute series of complex spherical harmonics.
+
+Installation
+============
+
+Install from PyPI::
+
+  pip install fsph
+
+Or from source::
+
+  git clone https://bitbucket.org/glotzer/fsph
+  cd fsph
+  python setup.py install
+
+API Reference
+=============
 
 .. automodule:: fsph
    :members: pointwise_sph, get_LMs
