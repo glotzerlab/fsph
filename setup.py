@@ -5,6 +5,9 @@ from distutils.command.build_ext import build_ext
 from distutils.core import Extension, setup
 import numpy
 
+with open('fsph/version.py') as version_file:
+    exec(version_file.read())
+
 macros = []
 extra_args = []
 sources = []
@@ -32,11 +35,12 @@ else:
                          extra_link_args=extra_args, include_dirs=[numpy.get_include()])]
 
 setup(name='fsph',
-      version='0.1',
+      version=__version__,
       description='Fast sequential spherical harmonics calculation',
       author='Matthew Spellings',
       author_email='mspells@umich.edu',
-      url='',
+      url='http://fsph.readthedocs.io',
       packages=['fsph'],
+      install_requires=['numpy'],
       ext_modules=modules
 )
