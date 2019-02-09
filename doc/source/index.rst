@@ -21,7 +21,7 @@ Install from PyPI::
 
 Or from source::
 
-  git clone https://bitbucket.org/glotzer/fsph
+  git clone https://github.com/glotzerlab/fsph.git
   cd fsph
   python setup.py install
 

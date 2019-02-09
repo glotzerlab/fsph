@@ -51,7 +51,7 @@ setup(name='fsph',
       packages=['fsph'],
       project_urls={
           'Documentation': 'http://fsph.readthedocs.io/',
-          'Source': 'https://bitbucket.org/glotzer/fsph'
+          'Source': 'https://github.com/glotzerlab/fsph'
           },
       url='http://fsph.readthedocs.io',
 )
