@@ -23,7 +23,7 @@ Installation
 
 Install from PyPI::
 
-  pip install fsph
+  pip install --no-build-isolation fsph
 
 Or from source::
 
@@ -36,6 +36,23 @@ API Reference
 
 .. automodule:: fsph
    :members: pointwise_sph, get_LMs
+
+Tensorflow Operations
+---------------------
+
+As of version 0.2, fsph can also compute spherical harmonic series of
+points on the CPU and GPU using tensorflow. This module is
+automatically built when tensorflow is found while installing
+fsph. GPU support is enabled when CUDA (specifically, the `nvcc`
+binary) is found while installing fsph.
+
+.. py:function:: fsph.tf_ops.spherical_harmonic_series(inputs, lmax, negative_m)
+
+   Compute a spherical harmonic series for a set of input points.
+
+   :param inputs: (..., 2) array of (phi, theta) values
+   :param lmax: Maximum spherical harmonic l to compute
+   :param negative_m: If True, compute for negative as well as positive m values
 
 Indices and tables
 ==================
