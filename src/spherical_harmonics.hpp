@@ -80,9 +80,9 @@ namespace fsph{
                 // give negative m result
                 if(m_m > m_l)
                 {
-                    const unsigned int m(m_m - m_l);
-                    return (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, m)]/sqrt(2*M_PI))*
-                            std::conj(m_generator.m_thetaHarmonics[m]));
+                    const unsigned int abs_m(m_m - m_l);
+                    return (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, abs_m)]/sqrt(2*M_PI))*
+                            std::conj(m_generator.m_thetaHarmonics[abs_m]));
                 }
                 else // positive m
                 {
@@ -90,6 +90,44 @@ namespace fsph{
                                 m_generator.m_legendre[sphIndex(m_l, m_m)]/sqrt(2*M_PI))*
                             m_generator.m_thetaHarmonics[m_m]);
                 }
+            }
+
+            inline std::complex<Real> grad_phi(Real phi, Real theta) const
+            {
+                const int m(m_m > m_l? m_l - m_m: m_m);
+                std::complex<Real> result(m/tan(phi), 0);
+                result *= this->operator*();
+
+                if(m != m_l)
+                {
+                    std::complex<Real> additional(
+                        sqrt((m_l - m)*(m_l + m + 1)), 0);
+                    additional *= exp(std::complex<Real>(0, -theta));
+
+                    unsigned int abs_m(m_m + 1);
+                    if(m < 0)
+                    {
+                        abs_m = m_m - m_l - 1;
+                        additional *= (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, abs_m)]/sqrt(2*M_PI))*
+                                       std::conj(m_generator.m_thetaHarmonics[abs_m]));
+                    }
+                    else
+                    {
+                        additional *= -(std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, abs_m)]/sqrt(2*M_PI))*
+                                        m_generator.m_thetaHarmonics[abs_m]);
+                    }
+
+
+                    result += additional;
+                }
+
+                return result;
+            }
+
+            inline std::complex<Real> grad_theta() const
+            {
+                const int m(m_m > m_l? m_l - m_m: m_m);
+                return std::complex<Real>(0, m)*this->operator*();
             }
 
         private:

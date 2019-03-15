@@ -12,9 +12,11 @@ macros = []
 extra_args = []
 sources = []
 
+CYTHONIZE = False
 if '--cython' in sys.argv:
     from Cython.Build import cythonize
     sys.argv.remove('--cython')
+    CYTHONIZE = True
 
     def myCythonize(macros, *args, **kwargs):
         result = cythonize(*args, **kwargs)
@@ -33,6 +35,18 @@ else:
     modules = [Extension('fsph._fsph', sources=sources,
                          define_macros=macros, extra_compile_args=extra_args,
                          extra_link_args=extra_args, include_dirs=[numpy.get_include()])]
+
+try:
+    import tensorflow as tf
+
+    ext = Extension('fsph._tf_ops',
+                    sources=['src/tensorflow_op.cpp'],
+                    extra_compile_args=tf.sysconfig.get_compile_flags(),
+                    extra_link_args=tf.sysconfig.get_link_flags())
+    modules.append(ext)
+except ImportError:
+    # skip building tensorflow component
+    pass
 
 setup(name='fsph',
       version=__version__,
