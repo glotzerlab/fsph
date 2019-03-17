@@ -162,7 +162,7 @@ REGISTER_OP("SphericalHarmonicSeriesGrad")
     ::tensorflow::shape_inference::ShapeHandle output_handle;
     ::tensorflow::shape_inference::ShapeHandle extra_dim = c->MakeShape({c->MakeDim(2)});
     TF_RETURN_IF_ERROR(c->ReplaceDim(coords_input, -1, c->UnknownDim(), &output_handle));
-    TF_RETURN_IF_ERROR(c->Concatenate(c->input(0), extra_dim, &output_handle));
+    TF_RETURN_IF_ERROR(c->Concatenate(output_handle, extra_dim, &output_handle));
     c->set_output(0, output_handle);
 
     return Status::OK();
