@@ -131,6 +131,15 @@ public:
             return NULL;
     }
 
+    /// Returns the raw pointer held (NULL otherwise)
+    const T *get() const
+    {
+        if(m_shim)
+            return m_shim->m_target;
+        else
+            return NULL;
+    }
+
     /// Returns the size, in number of objects, of this array
     size_t size() const
     {

@@ -1,6 +1,5 @@
-#include <iostream>
-#include <complex>
-#include <math.h>
+
+#include "internal.hpp"
 #include "SharedArray.hpp"
 
 #ifndef __FSPH_SPHERICAL_HARMONICS__
@@ -8,25 +7,9 @@
 
 namespace fsph{
 
-    template<typename T>
-    inline T index2d(const T &w, const T &i, const int &j)
+    unsigned int sphCount(const unsigned int lmax)
     {
-        return w*i + j;
-    }
-
-    template<typename T>
-    inline T sphCount(const T &lmax)
-    {
-        return (lmax + 1)*(lmax + 2)/2;
-    }
-
-    template<typename T>
-    inline T sphIndex(const T &l, const T &m)
-    {
-        if(l > 0)
-            return sphCount(l - 1) + m;
-        else
-            return 0;
+        return internal::sphCount(lmax);
     }
 
     template<typename Real>
@@ -61,73 +44,24 @@ namespace fsph{
 
             inline iterator& operator++()
             {
-                unsigned int mCount;
-                if(m_full_m)
-                    mCount = 2*m_l + 1;
-                else
-                    mCount = m_l + 1;
-
-                ++m_m;
-                const unsigned int deltaL(m_m/mCount);
-                m_m %= mCount;
-                m_l += deltaL;
+                fsph::internal::iterator_increment<Real, std::complex<Real> >(m_full_m, m_l, m_m);
 
                 return *this;
             }
 
             inline std::complex<Real> operator*() const
             {
-                // give negative m result
-                if(m_m > m_l)
-                {
-                    const unsigned int abs_m(m_m - m_l);
-                    return (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, abs_m)]/sqrt(2*M_PI))*
-                            std::conj(m_generator.m_thetaHarmonics[abs_m]));
-                }
-                else // positive m
-                {
-                    return (std::complex<Real>(
-                                m_generator.m_legendre[sphIndex(m_l, m_m)]/sqrt(2*M_PI))*
-                            m_generator.m_thetaHarmonics[m_m]);
-                }
+                return fsph::internal::iterator_get<Real, std::complex<Real> >(m_l, m_m, m_generator.m_legendre.get(), m_generator.m_thetaHarmonics.get());
             }
 
             inline std::complex<Real> grad_phi(Real phi, Real theta) const
             {
-                const int m(m_m > m_l? m_l - m_m: m_m);
-                std::complex<Real> result(m/tan(phi), 0);
-                result *= this->operator*();
-
-                if(m != m_l)
-                {
-                    std::complex<Real> additional(
-                        sqrt((m_l - m)*(m_l + m + 1)), 0);
-                    additional *= exp(std::complex<Real>(0, -theta));
-
-                    unsigned int abs_m(m_m + 1);
-                    if(m < 0)
-                    {
-                        abs_m = m_m - m_l - 1;
-                        additional *= (std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, abs_m)]/sqrt(2*M_PI))*
-                                       std::conj(m_generator.m_thetaHarmonics[abs_m]));
-                    }
-                    else
-                    {
-                        additional *= -(std::complex<Real>(m_generator.m_legendre[sphIndex(m_l, abs_m)]/sqrt(2*M_PI))*
-                                        m_generator.m_thetaHarmonics[abs_m]);
-                    }
-
-
-                    result += additional;
-                }
-
-                return result;
+                return fsph::internal::iterator_get_grad_phi<Real, std::complex<Real> >(m_l, m_m, phi, theta, m_generator.m_legendre.get(), m_generator.m_thetaHarmonics.get());
             }
 
             inline std::complex<Real> grad_theta() const
             {
-                const int m(m_m > m_l? m_l - m_m: m_m);
-                return std::complex<Real>(0, m)*this->operator*();
+                return fsph::internal::iterator_get_grad_theta<Real, std::complex<Real> >(m_l, m_m, m_generator.m_legendre.get(), m_generator.m_thetaHarmonics.get());
             }
 
         private:
@@ -142,7 +76,7 @@ namespace fsph{
             m_thetaHarmonics(new std::complex<Real>[lmax + 1], lmax + 1),
             m_recurrencePrefactors(new Real[2*(lmax + 1)*lmax], 2*(lmax + 1)*lmax),
             m_jacobi(new Real[(lmax + 1)*(lmax + 1)], (lmax + 1)*(lmax + 1)),
-            m_legendre(new Real[sphCount(lmax)], sphCount(lmax))
+            m_legendre(new Real[internal::sphCount(lmax)], internal::sphCount(lmax))
         {
             evaluatePrefactors();
         }
@@ -190,78 +124,27 @@ namespace fsph{
 
         void evaluatePrefactors()
         {
-            const unsigned int f1Count(index2d(m_lmax, m_lmax + 1, 0));
-
-            for(unsigned int m(0); m < m_lmax + 1; ++m)
-            {
-                for(unsigned int l(1); l < m_lmax + 1; ++l)
-                {
-                    const unsigned int idx = index2d(m_lmax, m, l - 1);
-                    m_recurrencePrefactors[idx] =
-                        2*sqrt(1 + (m - 0.5)/l)*sqrt(1 - (m - 0.5)/(l + 2*m));
-                }
-            }
-
-            for(unsigned int m(0); m < m_lmax + 1; ++m)
-            {
-                m_recurrencePrefactors[f1Count + index2d(m_lmax, m, 0)] = 0;
-                for(unsigned int l(2); l < m_lmax + 1; ++l)
-                {
-                    const unsigned int idx = f1Count + index2d(m_lmax, m, l - 1);
-                    m_recurrencePrefactors[idx] =
-                        -sqrt(1.0 + 4.0/(2*l + 2*m - 3))*sqrt(1 - 1.0/l)*sqrt(1.0 - 1.0/(l + 2*m));
-                }
-            }
+            fsph::internal::evaluatePrefactors<Real, std::complex<Real> >(m_lmax, m_recurrencePrefactors.get());
         }
 
         void compute_sinpows(const Real &sphi)
         {
-            m_sinPowers[0] = 1;
-            for(unsigned int i(1); i < m_lmax + 1; ++i)
-                m_sinPowers[i] = m_sinPowers[i - 1]*sphi;
+            fsph::internal::compute_sinpows<Real, std::complex<Real> >(sphi, m_lmax, m_sinPowers.get());
         }
 
         void compute_thetaHarmonics(const Real &theta)
         {
-            m_thetaHarmonics[0] = std::complex<Real>(1, 0);
-            for(unsigned int i(0); i < m_lmax + 1; ++i)
-                m_thetaHarmonics[i] = exp(std::complex<Real>(0, i*theta));
+            fsph::internal::compute_thetaHarmonics<Real, std::complex<Real> >(theta, m_lmax, m_thetaHarmonics.get());
         }
 
         void compute_jacobis(const Real &cphi)
         {
-            const unsigned int f1Count(index2d(m_lmax, m_lmax + 1, 0));
-
-            for(unsigned int m(0); m < m_lmax + 1; ++m)
-            {
-                if(m > 0)
-                    m_jacobi[index2d(m_lmax + 1, m, 0)] =
-                        m_jacobi[index2d(m_lmax + 1, m - 1, 0)]*sqrt(1 + 1.0/2/m);
-                else
-                    m_jacobi[index2d(m_lmax + 1, (unsigned int) 0, 0)] = 1/sqrt(2);
-
-                if(m_lmax > 0)
-                    m_jacobi[index2d(m_lmax + 1, m, 1)] =
-                        cphi*m_recurrencePrefactors[index2d(m_lmax, m, 0)]*m_jacobi[index2d(m_lmax + 1, m, 0)];
-
-                for(unsigned int l(2); l < m_lmax + 1; ++l)
-                {
-                    m_jacobi[index2d(m_lmax + 1, m, l)] =
-                        (cphi*m_recurrencePrefactors[index2d(m_lmax, m, l - 1)]*m_jacobi[index2d(m_lmax + 1, m, l - 1)] +
-                         m_recurrencePrefactors[f1Count + index2d(m_lmax, m, l - 1)]*m_jacobi[index2d(m_lmax + 1, m, l - 2)]);
-                }
-            }
+            fsph::internal::compute_jacobis<Real, std::complex<Real> >(cphi, m_lmax, m_recurrencePrefactors.get(), m_jacobi.get());
         }
 
         void compute_legendres()
         {
-            for(unsigned int l(0); l < m_lmax + 1; ++l)
-            {
-                for(unsigned int m(0); m < l + 1; ++m)
-                {
-                    m_legendre[sphIndex(l, m)] = m_sinPowers[m]*m_jacobi[index2d(m_lmax + 1, m, l - m)];
-                }
-            }
+            fsph::internal::compute_legendres<Real, std::complex<Real> >(m_lmax, m_sinPowers.get(), m_jacobi.get(), m_legendre.get());
         }
     };
 
