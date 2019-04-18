@@ -37,7 +37,8 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline void evaluatePrefactors(const unsigned int lmax, Real *recurrencePrefactors)
+        __device__ inline void evaluatePrefactors(
+            const unsigned int lmax, Real *recurrencePrefactors)
         {
             const unsigned int f1Count(index2d(lmax, lmax + 1, 0));
 
@@ -64,7 +65,8 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline void compute_sinpows(const Real &sphi, const unsigned int lmax, Real *sinPowers)
+        __device__ inline void compute_sinpows(
+            const Real &sphi, const unsigned int lmax, Real *sinPowers)
         {
             sinPowers[0] = 1;
             for(unsigned int i(1); i < lmax + 1; ++i)
@@ -72,7 +74,8 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline void compute_thetaHarmonics(const Real &theta, const unsigned int lmax, Complex *thetaHarmonics)
+        __device__ inline void compute_thetaHarmonics(
+            const Real &theta, const unsigned int lmax, Complex *thetaHarmonics)
         {
             thetaHarmonics[0] = Complex(1, 0);
             for(unsigned int i(0); i < lmax + 1; ++i)
@@ -80,7 +83,10 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline void compute_jacobis(const Real &cphi, const unsigned int lmax, const Real *recurrencePrefactors, Real *jacobi)
+        __device__ inline void compute_jacobis(
+            const Real &cphi, const unsigned int lmax,
+            const Real *__restrict__ recurrencePrefactors,
+            Real *__restrict__ jacobi)
         {
             const unsigned int f1Count(index2d(lmax, lmax + 1, 0));
 
@@ -106,7 +112,9 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline void compute_legendres(const unsigned int lmax, const Real *sinPowers, const Real *jacobi, Real *legendre)
+        __device__ inline void compute_legendres(
+            const unsigned int lmax, const Real *__restrict__ sinPowers,
+            const Real *__restrict__ jacobi, Real *__restrict__ legendre)
         {
             for(unsigned int l(0); l < lmax + 1; ++l)
             {
@@ -118,7 +126,8 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline void iterator_increment(const bool full_m, unsigned int &l, unsigned int &m)
+        __device__ inline void iterator_increment(
+            const bool full_m, unsigned int &l, unsigned int &m)
         {
             unsigned int mCount;
             if(full_m)
@@ -133,7 +142,10 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline Complex iterator_get(const unsigned int l, const unsigned int m, const Real *legendre, const Complex *thetaHarmonics)
+        __device__ inline Complex iterator_get(
+            const unsigned int l, const unsigned int m,
+            const Real *legendre,
+            const Complex *thetaHarmonics)
         {
             // give negative m result
             if(m > l)
@@ -150,7 +162,10 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline Complex iterator_get_grad_phi(const unsigned int l, const unsigned int m_index, const Real phi, const Real theta, const Real *legendre, const Complex *thetaHarmonics)
+        __device__ inline Complex iterator_get_grad_phi(
+            const unsigned int l, const unsigned int m_index, const Real phi,
+            const Real theta, const Real *legendre,
+            const Complex *thetaHarmonics)
         {
             const int m(m_index > l? l - m_index: m_index);
             Complex result(m/tan(phi), 0);
@@ -181,7 +196,9 @@ namespace fsph{
         }
 
         template<typename Real, typename Complex>
-        __device__ inline Complex iterator_get_grad_theta(const unsigned int l, const unsigned int m_index, const Real *legendre, const Complex *thetaHarmonics)
+        __device__ inline Complex iterator_get_grad_theta(
+            const unsigned int l, const unsigned int m_index,
+            const Real *legendre, const Complex *thetaHarmonics)
         {
             const int m(m_index > l? l - m_index: m_index);
             return Complex(0, m)*iterator_get(l, m, legendre, thetaHarmonics);
