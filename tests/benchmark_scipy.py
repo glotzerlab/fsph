@@ -10,14 +10,16 @@ import fsph
 N = {N}
 lmax = {lmax}
 
-phis = np.random.uniform(-np.pi, np.pi, size=(N,))
+phis = np.random.uniform(0, np.pi, size=(N,))
 thetas = np.random.uniform(0, 2*np.pi, size=(N,))
 
 def Ylm_scipy(phis, thetas, lmax):
     result = []
-    for l in range(lmax):
-        for m in range(-l, l+1):
-            result.append(sp.special.sph_harm(m, l, phis, thetas))
+    for l in range(lmax + 1):
+        for m in range(l + 1):
+            result.append(sp.special.sph_harm(m, l, thetas, phis)*(-1)**m)
+        for m in range(1, l + 1):
+            result.append(sp.special.sph_harm(-m, l, thetas, phis))
 
     return result
 
