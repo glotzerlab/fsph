@@ -25,7 +25,7 @@ def pointwise_sph(phi, theta, lmax, negative_m=True):
     To map the columns of the result array to particular (l, m)
     values, see :py:func:`get_LMs`.
 
-    :param phi: Array-like object of polar angles in [-pi, pi]
+    :param phi: Array-like object of polar angles in [0, pi]
     :param theta: Array-like object of azimuthal angles in [0, 2*pi]
     :param lmax: Integer maximum spherical harmonic degree to compute (inclusive)
     :param negative_m: Set to False to disable the negative-m spherical harmonics
