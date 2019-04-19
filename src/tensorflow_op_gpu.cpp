@@ -40,20 +40,8 @@ public:
                                                          &output_tensor));
         auto output_flat = output_tensor->flat<Complex>();
 
-        const unsigned int points_per_block(1);
-        const unsigned int base_mem_elements(2*(lmax + 1)*lmax); // recurrence prefactors
-        const unsigned int base_mem_bytes(sizeof(Real)*base_mem_elements);
-        const unsigned int mem_elements_per_point(
-            lmax + 1 + // sin powers
-            2*(lmax + 1) + // theta harmonics (*2 to hold complex)
-            (lmax + 1)*(lmax + 1) + // jacobi
-            internal::sphCount(lmax) // legendre
-            );
-        const unsigned int mem_bytes_per_point(sizeof(Real)*mem_elements_per_point);
-        const unsigned int mem_bytes(base_mem_bytes + points_per_block*mem_bytes_per_point);
-
         SphericalHarmonicSeriesLauncher<Real, Complex>(
-            input_flat.data(), N, points_per_block, lmax, negative_m, mem_bytes,
+            input_flat.data(), N, lmax, negative_m,
             output_flat.data());
     }
 };

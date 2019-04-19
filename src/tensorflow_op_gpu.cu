@@ -1,12 +1,6 @@
 
 #include "tensorflow_op_gpu.cu.hpp"
-#include "internal.hpp"
-
-#define THETA_HARMONICS_OFFSET 0
-#define RECURRENCE_PREFACTORS_OFFSET THETA_HARMONICS_OFFSET + lmax + 1
-#define SIN_POWERS_OFFSET RECURRENCE_PREFACTORS_OFFSET + 2*(lmax + 1)*lmax
-#define JACOBI_OFFSET SIN_POWERS_OFFSET + (lmax + 1)*blockDim.x
-#define LEGENDRE_OFFSET JACOBI_OFFSET + (lmax + 1)*(lmax + 1)*blockDim.x
+#include "../cuda_complex/cuda_complex.hpp"
 
 namespace fsph{
     template<typename Real, typename Complex>
@@ -15,67 +9,83 @@ namespace fsph{
         const unsigned int lmax, const bool full_m,
         Complex *__restrict__ output)
     {
-        extern __shared__ Real sh[];
-
-        if(blockIdx.x*blockDim.x + threadIdx.x > N)
+        if(blockIdx.x*blockDim.y + threadIdx.y > N)
             return;
 
-        // we are writing the same info multiple times, but the
-        // alternative is a syncthreads
-        internal::evaluatePrefactors<Real, Complex>(lmax, &sh[RECURRENCE_PREFACTORS_OFFSET]);
-        const Real phi(phitheta[2*(blockIdx.x*blockDim.x + threadIdx.x)]);
+        const Real phi(phitheta[2*(blockIdx.x*blockDim.y + threadIdx.y)]);
         Real sphi, cphi;
         sincosf(phi, &sphi, &cphi);
+        const Real theta(phitheta[2*(blockIdx.x*blockDim.y + threadIdx.y) + 1]);
 
-        internal::compute_sinpows<Real, Complex>(
-            sphi, lmax, &sh[SIN_POWERS_OFFSET + (lmax + 1)*threadIdx.x]);
+        unsigned int m(threadIdx.x);
+        unsigned int l(m);
+        Real jacobi_before_last(0);
 
-        const Real theta(phitheta[2*(blockIdx.x*blockDim.x + threadIdx.x) + 1]);
+        Real last_jacobi(1);
+        for(unsigned int i(1); i <= m; i++)
+            last_jacobi *= 1 + 0.5/i;
+        last_jacobi = sqrt(last_jacobi);
+        last_jacobi /= sqrt(2.0);
 
-        internal::compute_thetaHarmonics<Real, Complex>(
-            theta, lmax, (Complex*) &sh[THETA_HARMONICS_OFFSET + (lmax + 1)*threadIdx.x]);
-
-        internal::compute_jacobis<Real, Complex>(
-            cphi, lmax, &sh[RECURRENCE_PREFACTORS_OFFSET],
-            &sh[JACOBI_OFFSET + (lmax + 1)*(lmax + 1)*threadIdx.x]);
-
-        internal::compute_legendres<Real, Complex>(
-            lmax, &sh[SIN_POWERS_OFFSET + (lmax + 1)*threadIdx.x],
-            &sh[JACOBI_OFFSET + (lmax + 1)*(lmax + 1)*threadIdx.x],
-            &sh[LEGENDRE_OFFSET + internal::sphCount(lmax)*threadIdx.x]);
-
-        unsigned int l(0), m(0), num_sphs(0);
-        const unsigned int sph_stride(
-            full_m? (lmax + 1)*(lmax + 2)/2 + lmax*(lmax + 1)/2:
-                    (lmax + 1)*(lmax + 2)/2);
-
-        while(l <= lmax)
+        for(unsigned int i(0); i < lmax + 1; i++)
         {
-            const unsigned int sph_index(
-                sph_stride*(blockIdx.x*blockDim.x + threadIdx.x) + num_sphs++);
-            output[sph_index] = internal::iterator_get<Real, Complex>(
-                l, m, &sh[LEGENDRE_OFFSET + internal::sphCount(lmax)*threadIdx.x],
-                (Complex*) &sh[THETA_HARMONICS_OFFSET + (lmax + 1)*threadIdx.x]);
+            if(l > lmax)
+            {
+                m = lmax - threadIdx.x;
+                l = m;
+                jacobi_before_last = 0;
+                last_jacobi = 1;
+                for(unsigned int j(1); j <= m; j++)
+                    last_jacobi *= 1 + 0.5/j;
+                last_jacobi = sqrt(last_jacobi);
+                last_jacobi /= sqrt(2.0);
+            }
 
-            internal::iterator_increment<Real, Complex>(full_m, l, m);
+            const Real k(l - m);
+            const Real prefactor_1(
+                2*sqrt((1.0 + (m - 0.5)/k)*(1.0 - (m - 0.5)/(k + 2.0*m))));
+            const Real prefactor_2(
+                sqrt((1.0 + 4.0/(2.0*k + 2.0*m - 3.0))*(1.0 - 1.0/k)*(1.0 - 1.0/(k + 2.0*m))));
+            const Real jacobi(
+                prefactor_1*cphi*last_jacobi - prefactor_2*jacobi_before_last);
+
+            Complex Ylm(pow(sphi, m)/sqrt(2*M_PI)*jacobi);
+            Ylm *= exp(Complex(0, m*theta));
+
+            jacobi_before_last = last_jacobi;
+            last_jacobi = jacobi;
+
+            const unsigned int sph_per_point(
+                full_m? (lmax + 1)*(lmax + 2)/2 + lmax*(lmax + 1)/2:
+                        (lmax + 1)*(lmax + 2)/2);
+            const unsigned int sph_index(
+                (blockIdx.x*blockDim.y + threadIdx.y)*sph_per_point +
+                l*(l + 1)/2 + m);
+            output[sph_index] = Ylm;
+
+            if(full_m)
+                output[sph_index + l] = Ylm*exp(Complex(0, -2.0*m*theta));
+
+            l++;
         }
     }
 
     template<typename Real, typename Complex>
     void SphericalHarmonicSeriesKernelLauncher(
-        const Real *phitheta, const unsigned int N, const unsigned int points_per_block,
-        const unsigned int lmax, const bool full_m, const unsigned int shm_size,
+        const Real *phitheta, const unsigned int N,
+        const unsigned int lmax, const bool full_m,
         Complex *output)
     {
+        const unsigned int points_per_block(32);
         const unsigned int num_blocks((N + points_per_block - 1)/points_per_block);
+        const dim3 block_dim(lmax + 1, points_per_block);
 
-        // blockIdx.x*blockDim.x + threadIdx.x: point index
-        SphericalHarmonicSeriesKernel<Real, Complex><<<num_blocks, points_per_block, shm_size>>>(
+        SphericalHarmonicSeriesKernel<Real, Complex><<<num_blocks, block_dim>>>(
             phitheta, N, lmax, full_m, output);
     }
 }
 
 template void fsph::SphericalHarmonicSeriesKernelLauncher<float, complex<float>>(
-    const float *phitheta, const unsigned int N, const unsigned int points_per_block,
-    const unsigned int lmax, const bool full_m, const unsigned int shm_size,
+    const float *phitheta, const unsigned int N,
+    const unsigned int lmax, const bool full_m,
     complex<float> *output);
