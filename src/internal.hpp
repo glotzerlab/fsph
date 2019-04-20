@@ -77,7 +77,7 @@ namespace fsph{
 
                 if(m_m != l)
                 {
-                    Complex additional(sqrt((l - m)*(l + m + 1)), 0);
+                    Complex additional(sqrt((Real) (l - m)*(l + m + 1)), 0);
                     additional *= exp(Complex(0, -theta));
                     additional *= Ylmp1;
 
