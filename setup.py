@@ -62,6 +62,8 @@ class CustomBuildCommand(build_ext):
                 src_name = 'src/tensorflow_op_gpu.cu'
                 output_location = os.path.join(self.build_temp, 'tensorflow_op_gpu.cu.o')
 
+                ext.sources.append('src/tensorflow_op_gpu.cpp')
+
                 if newer(src_name, output_location):
                     os.makedirs(self.build_temp, 0o755, exist_ok=True)
                     command = [NVCC, '-c', '-o', output_location, src_name,
