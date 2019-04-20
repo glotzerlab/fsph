@@ -81,8 +81,13 @@ namespace fsph{
                     additional *= exp(Complex(0, -theta));
                     additional *= Ylmp1;
 
+                    if(!negative_m)
+                        additional *= -1;
+
                     result += additional;
                 }
+                else if(negative_m)
+                    result *= -1;
 
                 return result;
             }
