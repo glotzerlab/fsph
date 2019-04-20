@@ -21,7 +21,7 @@ namespace fsph{
 
             __device__ void reset(const unsigned int &m)
             {
-                m_m = 0;
+                m_m = m;
                 m_jacobi_before_last = 0;
 
                 m_last_jacobi = 1.0;
@@ -31,7 +31,10 @@ namespace fsph{
                 m_last_jacobi /= sqrt(2.0);
             }
 
-            __device__ Complex get(const Real &sphi, const Real &cphi, const Real &theta, const unsigned int &l)
+            // NOTE: l *must* be incremented afterward to keep a proper series
+            __device__ Complex get(
+                const Real &cphi, const Real &sphi, const Real &theta,
+                const unsigned int &l)
             {
                 const Real k(l - m_m);
                 const Real prefactor_1(
@@ -41,18 +44,53 @@ namespace fsph{
                 const Real jacobi(
                     prefactor_1*cphi*m_last_jacobi - prefactor_2*m_jacobi_before_last);
 
-                Complex Ylm(pow(sphi, m_m)/sqrt(2*M_PI)*jacobi);
-                Ylm *= exp(Complex(0, m_m*theta));
+                Complex Ylm(pow(sphi, m_m)/sqrt(2*M_PI));
 
-                m_jacobi_before_last = m_last_jacobi;
-                m_last_jacobi = jacobi;
+                if(l > m_m)
+                {
+                    Ylm *= jacobi;
+                    m_jacobi_before_last = m_last_jacobi;
+                    m_last_jacobi = jacobi;
+                }
+                else
+                    Ylm *= m_last_jacobi;
+
+                Ylm *= exp(Complex(0, m_m*theta));
 
                 return Ylm;
             }
 
-            __device__ Complex get_negative_m(const Complex &Ylm, const Real &theta)
+            __device__ Complex get_negative_m(
+                const Complex &Ylm, const Real &theta) const
             {
                 return exp(Complex(0, -2.0*m_m*theta))*Ylm;
+            }
+
+            __device__ Complex grad_phi(
+                const Real &cphi, const Real &sphi, const Real &theta,
+                const unsigned int &l, const Complex &Ylm, const Complex &Ylmp1,
+                const bool &negative_m) const
+            {
+                const int m(negative_m? -m_m: m_m);
+                Complex result(m*cphi/sphi, 0);
+                result *= Ylm;
+
+                if(m_m != l)
+                {
+                    Complex additional(sqrt((l - m)*(l + m + 1)), 0);
+                    additional *= exp(Complex(0, -theta));
+                    additional *= Ylmp1;
+
+                    result += additional;
+                }
+
+                return result;
+            }
+
+            __device__ Complex grad_theta(const Complex &Ylm, const bool &negative_m) const
+            {
+                const int m(negative_m? -m_m: m_m);
+                return Complex(0, m)*Ylm;
             }
 
         private:

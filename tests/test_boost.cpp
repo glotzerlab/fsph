@@ -24,19 +24,25 @@ int main(int argc, char **argv)
         for(unsigned int m(0); m <= l; ++m)
         {
             std::complex<float> from_fsph(*iter);
+            // std::cout << iter.grad_phi(phi, theta) << ' ' << iter.grad_theta() << std::endl;
             // boost names phi and theta using the opposite convention
             std::complex<float> from_boost(spherical_harmonic(l, m, phi, theta));
             from_boost *= pow(-1, m);
             error += abs(from_fsph - from_boost);
+            if(abs(from_fsph - from_boost) > 1e-5)
+                std::cout << l << ' ' << m << ' ' << from_fsph << ' ' << from_boost << std::endl;
             ++N;
             ++iter;
         }
         for(unsigned int m(1); m <= l; ++m)
         {
             std::complex<float> from_fsph(*iter);
+            // std::cout << iter.grad_phi(phi, theta) << ' ' << iter.grad_theta() << std::endl;
             // boost names phi and theta using the opposite convention
             std::complex<float> from_boost(spherical_harmonic(l, -(int)m, phi, theta));
             error += abs(from_fsph - from_boost);
+            if(abs(from_fsph - from_boost) > 1e-5)
+                std::cout << l << ' ' << m << ' ' << from_fsph << ' ' << from_boost << std::endl;
             ++N;
             ++iter;
         }
