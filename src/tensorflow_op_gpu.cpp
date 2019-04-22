@@ -48,7 +48,9 @@ public:
 
 REGISTER_KERNEL_BUILDER(
     Name("SphericalHarmonicSeries")
-    .Device(DEVICE_GPU),
+    .Device(DEVICE_GPU)
+    .HostMemory("lmax")
+    .HostMemory("negative_m"),
     SphericalHarmonicSeriesGPUOp<float>);
 
 template<typename Real>
@@ -93,5 +95,7 @@ public:
 
 REGISTER_KERNEL_BUILDER(
     Name("SphericalHarmonicSeriesGrad")
-    .Device(DEVICE_GPU),
+    .Device(DEVICE_GPU)
+    .HostMemory("lmax")
+    .HostMemory("negative_m"),
     SphericalHarmonicSeriesGradGPUOp<float>);
