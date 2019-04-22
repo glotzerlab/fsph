@@ -6,6 +6,10 @@ import tensorflow as tf
 import fsph, fsph.tf_ops
 
 class TestTensorflow(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.session = tf.Session()
+
     @hp.given(hps.integers(0, 64), hps.booleans(),
               hps.floats(0, np.pi, False, False),
               hps.floats(0, 2*np.pi, False, False))
@@ -17,8 +21,8 @@ class TestTensorflow(unittest.TestCase):
 
         inputs = np.array([phis, thetas]).T
 
-        with tf.Session() as ses:
-            Ys_tf = fsph.tf_ops.spherical_harmonic_series(inputs, lmax, negative_m).eval()
+        Ys_tf = self.session.run(
+            fsph.tf_ops.spherical_harmonic_series(inputs, lmax, negative_m))
 
         self.assertEqual(Ys_fsph.shape, Ys_tf.shape)
         np.testing.assert_allclose(Ys_fsph, Ys_tf, atol=1e-4)
@@ -46,8 +50,8 @@ class TestTensorflow(unittest.TestCase):
 
         inputs = np.array([phis, thetas]).T
 
-        with tf.Session() as ses:
-            grad_tf = fsph.tf_ops.spherical_harmonic_series_grad(inputs, lmax, negative_m).eval()
+        grad_tf = self.session.run(
+            fsph.tf_ops.spherical_harmonic_series_grad(inputs, lmax, negative_m))
 
         np.testing.assert_allclose(grad_numeric, grad_tf, atol=1e-2)
 
