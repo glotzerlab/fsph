@@ -7,7 +7,7 @@
 
 using namespace tensorflow;
 
-template<typename Real, typename Complex>
+template<typename Real>
 class SphericalHarmonicSeriesGPUOp : public OpKernel {
 public:
     explicit SphericalHarmonicSeriesGPUOp(OpKernelConstruction* context) : OpKernel(context) {}
@@ -38,9 +38,9 @@ public:
         Tensor* output_tensor = NULL;
         OP_REQUIRES_OK(context, context->allocate_output(0, outputShape,
                                                          &output_tensor));
-        auto output_flat = output_tensor->flat<Complex>();
+        auto output_flat = output_tensor->flat<std::complex<Real> >();
 
-        fsph::SphericalHarmonicSeriesKernelLauncher<Real, Complex>(
+        fsph::SphericalHarmonicSeriesKernelLauncher<Real>(
             input_flat.data(), N, lmax, negative_m,
             output_flat.data());
     }
@@ -49,9 +49,9 @@ public:
 REGISTER_KERNEL_BUILDER(
     Name("SphericalHarmonicSeries")
     .Device(DEVICE_GPU),
-    SphericalHarmonicSeriesGPUOp<float, std::complex<float> >);
+    SphericalHarmonicSeriesGPUOp<float>);
 
-template<typename Real, typename Complex>
+template<typename Real>
 class SphericalHarmonicSeriesGradGPUOp : public OpKernel {
 public:
     explicit SphericalHarmonicSeriesGradGPUOp(OpKernelConstruction* context) : OpKernel(context) {}
@@ -83,9 +83,9 @@ public:
         Tensor* output_tensor = NULL;
         OP_REQUIRES_OK(context, context->allocate_output(0, outputShape,
                                                          &output_tensor));
-        auto output_flat = output_tensor->flat<Complex>();
+        auto output_flat = output_tensor->flat<std::complex<Real> >();
 
-        fsph::SphericalHarmonicSeriesGradKernelLauncher<Real, Complex>(
+        fsph::SphericalHarmonicSeriesGradKernelLauncher<Real>(
             input_flat.data(), N, lmax, negative_m,
             output_flat.data());
     }
@@ -94,4 +94,4 @@ public:
 REGISTER_KERNEL_BUILDER(
     Name("SphericalHarmonicSeriesGrad")
     .Device(DEVICE_GPU),
-    SphericalHarmonicSeriesGradGPUOp<float, std::complex<float> >);
+    SphericalHarmonicSeriesGradGPUOp<float>);

@@ -48,18 +48,18 @@ namespace fsph{
         }
     }
 
-    template<typename Real, typename Complex>
+    template<typename Real>
     void SphericalHarmonicSeriesKernelLauncher(
         const Real *phitheta, const unsigned int N,
         const unsigned int lmax, const bool full_m,
-        Complex *output)
+        std::complex<Real> *output)
     {
         const unsigned int points_per_block(32);
         const unsigned int num_blocks((N + points_per_block - 1)/points_per_block);
         const dim3 block_dim(lmax + 1, points_per_block);
 
-        SphericalHarmonicSeriesKernel<Real, Complex><<<num_blocks, block_dim>>>(
-            phitheta, N, lmax, full_m, output);
+        SphericalHarmonicSeriesKernel<Real, complex<Real> ><<<num_blocks, block_dim>>>(
+            phitheta, N, lmax, full_m, (complex<Real>*) output);
     }
 
     template<typename Real, typename Complex>
@@ -116,27 +116,27 @@ namespace fsph{
         }
     }
 
-    template<typename Real, typename Complex>
+    template<typename Real>
     void SphericalHarmonicSeriesGradKernelLauncher(
         const Real *phitheta, const unsigned int N,
         const unsigned int lmax, const bool full_m,
-        Complex *output)
+        std::complex<Real> *output)
     {
         const unsigned int points_per_block(32);
         const unsigned int num_blocks((N + points_per_block - 1)/points_per_block);
         const dim3 block_dim(lmax + 1, points_per_block);
 
-        SphericalHarmonicSeriesGradKernel<Real, Complex><<<num_blocks, block_dim>>>(
-            phitheta, N, lmax, full_m, output);
+        SphericalHarmonicSeriesGradKernel<Real, complex<Real> ><<<num_blocks, block_dim>>>(
+            phitheta, N, lmax, full_m, (complex<Real>*) output);
     }
 }
 
-template void fsph::SphericalHarmonicSeriesKernelLauncher<float, complex<float>>(
+template void fsph::SphericalHarmonicSeriesKernelLauncher<float>(
     const float *phitheta, const unsigned int N,
     const unsigned int lmax, const bool full_m,
-    complex<float> *output);
+    std::complex<float> *output);
 
-template void fsph::SphericalHarmonicSeriesGradKernelLauncher<float, complex<float>>(
+template void fsph::SphericalHarmonicSeriesGradKernelLauncher<float>(
     const float *phitheta, const unsigned int N,
     const unsigned int lmax, const bool full_m,
-    complex<float> *output);
+    std::complex<float> *output);
