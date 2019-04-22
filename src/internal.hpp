@@ -73,6 +73,11 @@ namespace fsph{
             {
                 const int m(negative_m? -m_m: m_m);
                 Complex result(m*cphi/sphi, 0);
+
+                // disregard gradient when phi == 0, for example
+                if(!isfinite(result.real()))
+                    result = 0;
+
                 result *= Ylm;
 
                 if(m_m != l)
