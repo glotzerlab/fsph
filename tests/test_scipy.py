@@ -1,5 +1,6 @@
 import unittest
 
+import hypothesis as hp, hypothesis.strategies as hps
 import numpy as np
 import scipy as sp, scipy.special
 import fsph
@@ -15,19 +16,16 @@ def Ylm_scipy(phis, thetas, lmax):
     return np.transpose(result)
 
 class TestScipy(unittest.TestCase):
-    def test_values(self):
-        N = 8
-        lmax = 12
-
-        np.random.seed(13)
-
-        phis = np.random.uniform(0, np.pi, size=(N,))
-        thetas = np.random.uniform(0, 2*np.pi, size=(N,))
+    @hp.given(hps.integers(0, 64), hps.floats(0, np.pi, False, False),
+              hps.floats(0, 2*np.pi, False, False))
+    def test_values(self, lmax, phi, theta):
+        phis = np.array([phi])
+        thetas = np.array([theta])
 
         Ys_scipy = Ylm_scipy(phis, thetas, lmax)
         Ys_fsph = fsph.pointwise_sph(phis, thetas, lmax)
 
-        self.assertTrue(np.allclose(Ys_scipy, Ys_fsph))
+        np.testing.assert_allclose(Ys_fsph, Ys_scipy, atol=1e-6)
 
 if __name__ == '__main__':
     unittest.main()
