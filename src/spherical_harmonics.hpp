@@ -161,8 +161,7 @@ namespace fsph{
                 // for simplicity, resize to a definitely safe size
                 m_cached_Ylm.resize(2*m_generator.m_lmax + 1);
 
-                if(m_generator.m_lmax > 0)
-                    m_cached_Ylm[0] = 0.5/sqrt(M_PI);
+                m_cached_Ylm[0] = 0.5/sqrt(M_PI);
 
                 while(m_l < l && m_m < m)
                     this->operator++();
