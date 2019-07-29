@@ -55,7 +55,8 @@ class CustomBuildCommand(build_ext):
     """
     def run(self, *args, **kwargs):
         NVCC = os.environ.get('NVCC', 'nvcc')
-        found_nvcc = distutils.spawn.find_executable(NVCC) is not None
+        nvcc_path = distutils.spawn.find_executable(NVCC)
+        found_nvcc = nvcc_path is not None
 
         for ext in self.extensions:
             if '_tf_ops' in ext.name and found_nvcc:
@@ -63,6 +64,10 @@ class CustomBuildCommand(build_ext):
                 output_location = os.path.join(self.build_temp, 'tensorflow_op_gpu.cu.o')
 
                 ext.sources.append('src/tensorflow_op_gpu.cpp')
+
+                library_dir = os.path.join(os.path.split(nvcc_path)[0], '..', 'lib')
+                ext.library_dirs.append(library_dir)
+                ext.libraries.append('cudart')
 
                 if newer(src_name, output_location):
                     os.makedirs(self.build_temp, 0o755, exist_ok=True)
