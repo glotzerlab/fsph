@@ -163,7 +163,7 @@ namespace fsph{
 
                 m_cached_Ylm[0] = 0.5/sqrt(M_PI);
 
-                while(m_l < l && m_m < m)
+                while(m_l < l || m_m < m)
                     this->operator++();
             }
         };
