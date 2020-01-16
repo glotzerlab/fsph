@@ -57,6 +57,7 @@ class CustomBuildCommand(build_ext):
         NVCC = os.environ.get('NVCC', 'nvcc')
         nvcc_path = distutils.spawn.find_executable(NVCC)
         found_nvcc = nvcc_path is not None
+        log.info('NVCC: {}'.format(nvcc_path))
 
         for ext in self.extensions:
             if '_tf_ops' in ext.name and found_nvcc:
@@ -93,8 +94,10 @@ try:
                     extra_compile_args=tf.sysconfig.get_compile_flags(),
                     extra_link_args=tf.sysconfig.get_link_flags())
     modules.append(ext)
+    log.info('Will build tensorflow op library')
 except ImportError:
     # skip building tensorflow component
+    log.info('Failed importing tensorflow, will not build tensorflow op library')
     pass
 
 setup(name='fsph',
