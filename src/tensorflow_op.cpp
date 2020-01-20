@@ -133,7 +133,7 @@ public:
             for(typename fsph::PointSPHEvaluator<Real>::iterator iter(eval.begin(negative_m));
                 iter != eval.end(); ++iter)
             {
-                output_flat(offset++) = iter.grad_phi(phi, theta);
+                output_flat(offset++) = iter.grad_phi();
                 output_flat(offset++) = iter.grad_theta();
             }
         }
