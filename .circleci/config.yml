@@ -1,0 +1,60 @@
+version: 2
+
+jobs:
+  test-3.7: &test-template
+    docker:
+      - image: circleci/python:3.7
+
+    working_directory: ~/repo
+
+    steps:
+
+      - checkout
+
+      - run:
+          name: Install dependencies
+          command: |
+            export PATH=$PATH:$HOME/.local/bin
+            pip install -Uq virtualenv --user
+            mkdir -p ./venv
+            virtualenv ./venv
+            . venv/bin/activate
+            pip install -Uq pip
+            pip install -q tensorflow hypothesis
+            pip install -U --no-build-isolation .
+
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            cd tests
+            python -m unittest discover .
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+
+  test-3.6:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
+  test-3.5:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.5
+  test-osx:
+    <<: *test-template
+    docker: null
+    macos:
+      xcode: 11.3.0
+    environment:
+      - ARCHFLAGS: -std=c++11
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-3.5
+      - test-3.6
+      - test-3.7
+      - test-osx
