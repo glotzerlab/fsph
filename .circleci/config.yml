@@ -47,8 +47,6 @@ jobs:
     docker: null
     macos:
       xcode: 11.3.0
-    environment:
-      - ARCHFLAGS: -std=c++11
 
 workflows:
   version: 2

@@ -15,7 +15,7 @@ with open('fsph/version.py') as version_file:
     exec(version_file.read())
 
 macros = []
-extra_args = []
+extra_args = ['-std=c++11']
 sources = []
 
 CYTHONIZE = False
@@ -62,6 +62,7 @@ class CustomBuildCommand(build_ext):
 
         for ext in self.extensions:
 
+            ext.extra_compile_args.extend(extra_args)
             if self.debug:
                 ext.extra_compile_args.append('-O0')
 
