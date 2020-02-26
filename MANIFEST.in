@@ -1,4 +1,4 @@
-include setup.py pyproject.toml LICENSE README
+include setup.py pyproject.toml LICENSE README.md
 recursive-include src *.cpp *.hpp
 recursive-include fsph *.py *.pyx *.pxd *.cpp
 include doc/Makefile
