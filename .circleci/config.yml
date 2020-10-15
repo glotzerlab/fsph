@@ -20,7 +20,7 @@ jobs:
             virtualenv ./venv
             . venv/bin/activate
             pip install -Uq pip
-            pip install -q tensorflow hypothesis
+            pip install -q tensorflow hypothesis scipy
             pip install -U --no-build-isolation .
 
       - run:
