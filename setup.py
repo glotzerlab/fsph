@@ -6,10 +6,15 @@ from distutils.command.build_ext import build_ext
 from distutils.core import Extension, setup
 from distutils import log
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import numpy
+
+# Ensure that builds on Mac use correct stdlib.
+if platform.system() == 'Darwin':
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.12"
 
 with open('fsph/version.py') as version_file:
     exec(version_file.read())
