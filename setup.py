@@ -14,7 +14,7 @@ import numpy
 
 # Ensure that builds on Mac use correct stdlib.
 if platform.system() == 'Darwin':
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.12"
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.15"
 
 with open('fsph/version.py') as version_file:
     exec(version_file.read())
