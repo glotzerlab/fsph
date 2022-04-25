@@ -15,7 +15,7 @@ with open('fsph/version.py') as version_file:
     exec(version_file.read())
 
 macros = []
-extra_args = ['-std=c++11']
+extra_args = ['-std=c++14']
 sources = []
 
 CYTHONIZE = False
@@ -73,7 +73,9 @@ class CustomBuildCommand(build_ext):
                 ext.sources.append('src/tensorflow_op_gpu.cpp')
 
                 library_dir = os.path.join(os.path.split(nvcc_path)[0], '..', 'lib')
+                library_dir_64 = os.path.join(os.path.split(nvcc_path)[0], '..', 'lib64')
                 ext.library_dirs.append(library_dir)
+                ext.library_dirs.append(library_dir_64)
                 ext.libraries.append('cudart')
 
                 if newer(src_name, output_location):
