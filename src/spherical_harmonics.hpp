@@ -308,6 +308,31 @@ namespace fsph{
             }
         }
     }
+
+    template<typename Real>
+    void evaluate_SPH_with_grads(std::complex<Real> *gradTarget, std::complex<Real> *sphTarget, unsigned int lmax, const Real *phi, const Real *theta, unsigned int N, bool full_m)
+    {
+        PointSPHEvaluator<Real> eval(lmax);
+
+        unsigned int j(0);
+        for(unsigned int i(0); i < N; ++i)
+        {
+            eval.compute(phi[i], theta[i]);
+
+            for(typename PointSPHEvaluator<Real>::iterator iter(eval.begin(full_m));
+                iter != eval.end(); ++iter)
+            {
+                if(sphTarget)
+                    sphTarget[j] = *iter;
+                if(gradTarget)
+                {
+                    gradTarget[2*j] = iter.grad_phi();
+                    gradTarget[2*j + 1] = iter.grad_theta();
+                }
+                ++j;
+            }
+        }
+    }
 }
 
 #endif
