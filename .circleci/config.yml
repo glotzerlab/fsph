@@ -3,7 +3,7 @@ version: 2
 jobs:
   test-3.7: &test-template
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.7
 
     working_directory: ~/repo
 
@@ -34,25 +34,25 @@ jobs:
           path: test-reports
           destination: test-reports
 
+  test-3.10:
+    <<: *test-template
+    docker:
+      - image: cimg/python:3.10
   test-3.6:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6
-  test-3.5:
-    <<: *test-template
-    docker:
-      - image: circleci/python:3.5
+      - image: cimg/python:3.6
   test-osx:
     <<: *test-template
     docker: null
     macos:
-      xcode: 11.3.0
+      xcode: 13.3.0
 
 workflows:
   version: 2
   test:
     jobs:
-      - test-3.5
       - test-3.6
       - test-3.7
+      - test-3.10
       - test-osx
