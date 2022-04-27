@@ -11,9 +11,9 @@ class TestTensorflow(unittest.TestCase):
     @hp.settings(deadline=None, print_blob=True)
     @hp.given(hps.integers(0, 64), hps.booleans(),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
-                         hps.floats(0, np.float32(np.pi), False, False, width=32)),
+                         elements=hps.floats(0, np.float32(np.pi), width=32)),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
-                         hps.floats(0, np.float32(2*np.pi), False, False, width=32)))
+                         elements=hps.floats(0, np.float32(2*np.pi), width=32)))
     def test_basic(self, lmax, negative_m, phis, thetas):
         phis = phis[:min(len(phis), len(thetas))]
         thetas = thetas[:min(len(phis), len(thetas))]
@@ -30,11 +30,11 @@ class TestTensorflow(unittest.TestCase):
     @hp.settings(deadline=None, print_blob=True)
     @hp.given(hps.integers(0, 12), hps.booleans(),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
-                         hps.floats(np.float32(.1),
-                                    np.float32(np.pi - .1), False, False, width=32)),
+                         elements=hps.floats(np.float32(.1),
+                                             np.float32(np.pi - .1), width=32)),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
-                         hps.floats(np.float32(.1),
-                                    np.float32(2*np.pi - .1), False, False, width=32)))
+                         elements=hps.floats(np.float32(.1),
+                                             np.float32(2*np.pi - .1), width=32)))
     def test_numeric_gradient(self, lmax, negative_m, phis, thetas):
         phis = phis[:min(len(phis), len(thetas))]
         thetas = thetas[:min(len(phis), len(thetas))]
@@ -62,11 +62,11 @@ class TestTensorflow(unittest.TestCase):
     @hp.settings(deadline=None, print_blob=True)
     @hp.given(hps.integers(0, 12), hps.booleans(),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
-                         hps.floats(np.float32(.1),
-                                    np.float32(np.pi - .1), False, False, width=32)),
+                         elements=hps.floats(np.float32(.1),
+                                             np.float32(np.pi - .1), width=32)),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
-                         hps.floats(np.float32(.1),
-                                    np.float32(2*np.pi - .1), False, False, width=32)))
+                         elements=hps.floats(np.float32(.1),
+                                             np.float32(2*np.pi - .1), width=32)))
     def test_tf_gradient(self, lmax, negative_m, phis, thetas):
         phis = phis[:min(len(phis), len(thetas))]
         thetas = thetas[:min(len(phis), len(thetas))]

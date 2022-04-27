@@ -16,8 +16,8 @@ def Ylm_scipy(phis, thetas, lmax):
     return np.transpose(result)
 
 class TestScipy(unittest.TestCase):
-    @hp.given(hps.integers(0, 64), hps.floats(0, np.pi, False, False),
-              hps.floats(0, 2*np.pi, False, False))
+    @hp.given(hps.integers(0, 64), hps.floats(0, np.pi),
+              hps.floats(0, 2*np.pi))
     def test_values(self, lmax, phi, theta):
         phis = np.array([phi])
         thetas = np.array([theta])
