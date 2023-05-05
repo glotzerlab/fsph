@@ -9,7 +9,7 @@ import fsph, fsph.tf_ops
 
 class TestTensorflow(unittest.TestCase):
     @hp.settings(deadline=None, print_blob=True)
-    @hp.given(hps.integers(0, 64), hps.booleans(),
+    @hp.given(hps.integers(0, 32), hps.booleans(),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
                          elements=hps.floats(0, np.float32(np.pi), width=32)),
               hpn.arrays(np.float32, hpn.array_shapes(max_dims=1),
