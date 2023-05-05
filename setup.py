@@ -15,8 +15,30 @@ with open('fsph/version.py') as version_file:
     exec(version_file.read())
 
 macros = []
-extra_args = ['-std=c++14']
+extra_args = []
 sources = []
+modules = []
+cpp_std = '--std=c++14'
+
+try:
+    import tensorflow as tf
+
+    for flag in tf.sysconfig.get_compile_flags():
+        if 'std=c++' in flag:
+            cpp_std = flag
+
+    ext = Extension('fsph._tf_ops',
+                    sources=['src/tensorflow_op.cpp'],
+                    extra_compile_args=tf.sysconfig.get_compile_flags(),
+                    extra_link_args=tf.sysconfig.get_link_flags())
+    modules.append(ext)
+    log.info('Will build tensorflow op library')
+except ImportError:
+    # skip building tensorflow component
+    log.info('Failed importing tensorflow, will not build tensorflow op library')
+    pass
+
+extra_args.append(cpp_std)
 
 CYTHONIZE = False
 if '--cython' in sys.argv:
@@ -35,12 +57,12 @@ if '--cython' in sys.argv:
 
         return result
 
-    modules = myCythonize(macros, 'fsph/_fsph.pyx')
+    modules.extend(myCythonize(macros, 'fsph/_fsph.pyx'))
 else:
     sources.append('fsph/_fsph.cpp')
-    modules = [Extension('fsph._fsph', sources=sources,
-                         define_macros=macros, extra_compile_args=extra_args,
-                         extra_link_args=extra_args, include_dirs=[numpy.get_include()])]
+    modules.append(Extension('fsph._fsph', sources=sources,
+                             define_macros=macros, extra_compile_args=extra_args,
+                             extra_link_args=extra_args, include_dirs=[numpy.get_include()]))
 
 class CustomBuildCommand(build_ext):
     """Custom build command that compiles the CUDA tensorflow module and incorporates it into the final extension.
@@ -96,20 +118,6 @@ class CustomBuildCommand(build_ext):
                     ext.extra_objects.append(output_location)
 
         super().run(*args, **kwargs)
-
-try:
-    import tensorflow as tf
-
-    ext = Extension('fsph._tf_ops',
-                    sources=['src/tensorflow_op.cpp'],
-                    extra_compile_args=tf.sysconfig.get_compile_flags(),
-                    extra_link_args=tf.sysconfig.get_link_flags())
-    modules.append(ext)
-    log.info('Will build tensorflow op library')
-except ImportError:
-    # skip building tensorflow component
-    log.info('Failed importing tensorflow, will not build tensorflow op library')
-    pass
 
 setup(name='fsph',
       version=__version__,
