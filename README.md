@@ -5,7 +5,8 @@
 
 fsph is a library to efficiently compute series of spherical harmonics (i.e. all of Y<sub>l</sub><sup>m</sup> for a set of l).
 
-It is based on math enumerated by Martin J. Mohlenkamp at http://www.ohio.edu/people/mohlenka/research/uguide.pdf.
+It is based on math enumerated by Martin J. Mohlenkamp at https://www.ohiouniversityfaculty.com/mohlenka/research/uguide.pdf.
+
 
 fsph uses portions of the cuda_complex project, located at
 https://github.com/jtravs/cuda_complex.git . Its code and license are
